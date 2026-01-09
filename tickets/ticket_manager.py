@@ -2,9 +2,12 @@ import json
 import os
 from datetime import datetime
 
-LOG_FILE = "logs/audit_log.json"
+LOG_DIR = "logs"
+LOG_FILE = os.path.join(LOG_DIR, "audit_log.json")
 
 def log_ticket(message, intent, confidence, action):
+    os.makedirs(LOG_DIR, exist_ok=True)
+
     log = {
         "timestamp": str(datetime.now()),
         "message": message,
@@ -13,7 +16,6 @@ def log_ticket(message, intent, confidence, action):
         "action": action
     }
 
-    # Load existing logs
     if os.path.exists(LOG_FILE):
         try:
             with open(LOG_FILE, "r") as f:
@@ -23,9 +25,7 @@ def log_ticket(message, intent, confidence, action):
     else:
         data = []
 
-    # Append new log
     data.append(log)
 
-    # Save back as proper JSON
     with open(LOG_FILE, "w") as f:
         json.dump(data, f, indent=2)
