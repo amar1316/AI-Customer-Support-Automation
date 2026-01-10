@@ -2,7 +2,13 @@ import streamlit as st
 import requests
 import pandas as pd
 
-API_BASE = "http://127.0.0.1:8000"
+import os
+
+API_BASE_URL = os.getenv(
+    "API_BASE_URL",
+    "http://127.0.0.1:8000"  # fallback for local
+)
+
 
 st.set_page_config(page_title="AI Support Admin Panel", layout="wide")
 st.title("🧠 AI Customer Support – Admin Panel")
@@ -13,7 +19,7 @@ st.title("🧠 AI Customer Support – Admin Panel")
 st.header("⏳ Pending Tickets")
 
 try:
-    pending_resp = requests.get(f"{API_BASE}/pending", timeout=5)
+    pending_resp = requests.get(f"{API_BASE_URL}/pending", timeout=5)
     pending = pending_resp.json()
 
     if not pending:
@@ -36,7 +42,7 @@ try:
                 with col1:
                     if st.button("✅ Approve", key=f"approve_{i}"):
                         requests.post(
-                            f"{API_BASE}/approve/{i}",
+                            f"{API_BASE_URL}/approve/{i}",
                             json={"final_reply": edited_reply}
                         )
                         st.success("Ticket approved and logged")
@@ -44,7 +50,7 @@ try:
 
                 with col2:
                     if st.button("❌ Reject", key=f"reject_{i}"):
-                        requests.post(f"{API_BASE}/reject/{i}")
+                        requests.post(f"{API_BASE_URL}/reject/{i}")
                         st.warning("Ticket rejected and logged")
                         st.rerun()
 
@@ -61,7 +67,7 @@ if st.button("🔄 Refresh Logs"):
     st.rerun()
 
 try:
-    logs_resp = requests.get(f"{API_BASE}/logs", timeout=5)
+    logs_resp = requests.get(f"{API_BASE_URL}/logs", timeout=5)
     logs = logs_resp.json()
 
     if not logs:
