@@ -66,3 +66,54 @@ def handle_support(req: SupportRequest):
             "action": action,
             "reply": reply
         }
+
+from typing import List
+
+@app.get("/pending")
+def get_pending_tickets():
+    from tickets.pending_store import get_pending
+    return get_pending()
+
+
+@app.post("/approve/{index}")
+def approve_ticket(index: int):
+    from tickets.pending_store import get_pending, remove_pending
+    from tickets.ticket_manager import log_ticket
+
+    pending = get_pending()
+    if index >= len(pending):
+        return {"status": "invalid index"}
+
+    ticket = pending[index]
+
+    log_ticket(
+        ticket["message"],
+        ticket["intent"],
+        ticket["confidence"],
+        "HUMAN APPROVED"
+    )
+
+    remove_pending(index)
+    return {"status": "approved"}
+
+
+@app.post("/reject/{index}")
+def reject_ticket(index: int):
+    from tickets.pending_store import get_pending, remove_pending
+    from tickets.ticket_manager import log_ticket
+
+    pending = get_pending()
+    if index >= len(pending):
+        return {"status": "invalid index"}
+
+    ticket = pending[index]
+
+    log_ticket(
+        ticket["message"],
+        ticket["intent"],
+        ticket["confidence"],
+        "HUMAN REJECTED"
+    )
+
+    remove_pending(index)
+    return {"status": "rejected"}
